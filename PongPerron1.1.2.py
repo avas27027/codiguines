@@ -1,37 +1,51 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 11 21:38:46 2019
+Created on Fri Nov 15 10:26:01 2019
 
-@author: ALVARO SOTELO
+@author: v6508
 """
-
-import turtle
+import random
+from turtle import Turtle, Screen
 
 class Ventana:
     def __init__(self,wn):
-        wn.title("El ping pong más perrón")
-        wn.bgcolor("black")
-        wn.setup(width = 800, height = 600)
-        wn.tracer(0)
+        self.wn=wn
+        self.wn.title("El ping pong más perrón")
+        self.wn.bgcolor("black")
+        self.wn.setup(width = 800, height = 600)
+        self.wn.tracer(0)
+    def Teclas(self, pa, pb):
+        self.wn.listen()
+        self.wn.onkeypress(pa.arriba,"w")
+        self.wn.onkeypress(pa.abajo,"s")
+        self.wn.onkeypress(pb.arriba,"Up")
+        self.wn.onkeypress(pb.abajo,"Down")
+        self.wn.onkeypress(pb.toogleActivacion,"1")
+        self.wn.onkeypress(pb.toogleGrande,"g")
         
 
-class Paleta:
+class Paleta(Turtle):
     def __init__(self, x):
-        self.paleta = turtle.Turtle()
-        self.x = x
-        self.paleta.speed(0)
-        self.paleta.shape("square")
-        self.paleta.color("white")
+        Turtle.__init__(self)
+        self.x = x        
+        self.speed(0)
+        self.shape("square")
+        self.color("white")
+        self.penup()
+        self.goto(self.x, 0)
         self.largo = 5
-        self.paleta.penup()
-        self.paleta.goto(self.x, 0)
+        self.shapesize(stretch_wid=self.largo, stretch_len=1)
         self.puntaje = 0
         self.activacion = True
-        self.paleta.shapesize(stretch_wid=self.largo, stretch_len=1)
+        self.grande = False
         
-    def grande(self):
-        self.paleta.shapesize(stretch_wid=self.largo*2, stretch_len=1)
-        
+    def toogleGrande(self):
+        if not self.grande:
+            self.shapesize(stretch_wid=self.largo*2, stretch_len=1)
+            self.grande = True
+        else:
+            self.shapesize(stretch_wid=self.largo, stretch_len=1)
+            self.grande = False
     
     def toogleActivacion(self):
         if self.activacion:
@@ -39,45 +53,39 @@ class Paleta:
         else:
             self.activacion=True
     
-    def auto(self, pe):
+    def auto(self, pe):                                                                                                                                                                                             
         if self.activacion==False:
-            self.paleta.goto(self.x, pe.pelota.ycor()+1)
+            self.goto(self.x, pe.ycor()+1)
         
     def arriba(self):
         if self.activacion:
-            y = self.paleta.ycor()
-            self.paleta.sety(y+20)
+            y = self.ycor()
+            self.sety(y+20)
         
         
     def abajo(self):
         if self.activacion:
-            y = self.paleta.ycor()
-            self.paleta.sety(y-20)
+            y = self.ycor()
+            self.sety(y-20)
 
     def hitBox(self, pe):
-        if (pe.pelota.xcor() <= self.paleta.xcor() + 20 and 
-                pe.pelota.xcor() >= self.paleta.xcor() - 20) and (
-                pe.pelota.ycor() < self.paleta.ycor() +(self.largo/5*70) and 
-                pe.pelota.ycor() > self.paleta.ycor() ):
+        val = [-1.0,1.0]
+        if (pe.xcor() <= self.xcor() + 20 and 
+                pe.xcor() >= self.xcor() - 20) and (
+                pe.ycor() < self.ycor() +(self.largo/5*70) and 
+                pe.ycor() > self.ycor() -(self.largo/5*70)):
             pe.dx*=-1.0
-            if  pe.dy<0:
-                pe.dy *=-1
-        if (pe.pelota.xcor() <= self.paleta.xcor() + 20 and 
-                pe.pelota.xcor() >= self.paleta.xcor() - 20) and (
-                pe.pelota.ycor() < self.paleta.ycor() and 
-                pe.pelota.ycor() > self.paleta.ycor() -(self.largo/5*70) ):
-            pe.dx*=-1.0    
-            if  pe.dy>0:
-                pe.dy *=-1
+            pe.dy *=random.sample(val,1)
+        
 
-class Pelota:
+class Pelota(Turtle):
     def __init__(self):
-        self.pelota = turtle.Turtle()
-        self.pelota.speed(0)
-        self.pelota.shape("circle")
-        self.pelota.color("white")
-        self.pelota.penup()
-        self.pelota.goto(0, 0)
+        Turtle.__init__(self)
+        self.speed(0)
+        self.shape("circle")
+        self.color("white")
+        self.penup()
+        self.goto(0, 0)
         self.dx = 0.25
         self.dy = 0.2
         self.acel = 1.0002
@@ -89,21 +97,21 @@ class Fisicas:
         self.pb = pb
         
     def movimiento(self):
-        self.pe.pelota.sety(self.pe.pelota.ycor() + self.pe.dy)
-        self.pe.pelota.setx(self.pe.pelota.xcor() + self.pe.dx)
+        self.pe.sety(self.pe.ycor() + self.pe.dy)
+        self.pe.setx(self.pe.xcor() + self.pe.dx)
         self.pe.dy *= self.pe.acel
         self.pe.dx *= self.pe.acel
         
     def bordes(self):
-        if self.pe.pelota.ycor() > 290 or self.pe.pelota.ycor() < -290:
+        if self.pe.ycor() > 290 or self.pe.ycor() < -290:
             self.pe.dy *= -1
-        if self.pe.pelota.xcor() > 342:
-            self.pe.pelota.goto(0,0)
+        if self.pe.xcor() > 342:
+            self.pe.goto(0,0)
             self.pa.puntaje+=1
             self.pe.dx = 0.25
             self.pe.dy = 0.25
-        if self.pe.pelota.xcor() < -342:
-            self.pe.pelota.goto(0,0)
+        if self.pe.xcor() < -342:
+            self.pe.goto(0,0)
             self.pb.puntaje+=1
             self.pe.dx = -0.25
             self.pe.dy = 0.25
@@ -113,40 +121,30 @@ class Fisicas:
         self.pb.hitBox(self.pe)
         
         
-class Score:
+class Score(Turtle):
     def __init__(self,pa,pb):
+        Turtle.__init__(self)
         self.pa=pa
         self.pb=pb
-        self.pen = turtle.Turtle()
-        self.pen.speed(0)
-        self.pen.color("white")
-        self.pen.penup()
-        self.pen.hideturtle()
-        self.pen.goto(0,260)
+        self.speed(0)
+        self.color("white")
+        self.penup()
+        self.hideturtle()
+        self.goto(0,260)
+        
     def scoreUpdate(self):
-        self.pen.clear()
-        self.pen.write("Jugador 1: {} | Jugador 2: {}".format(self.pa.puntaje,self.pb.puntaje), align="center", font=("Courier", 24,"normal"))
-        
-        
-class Tecla:
-    def __init__(self,wn,pa,pb,pe):
-        wn.listen()
-        wn.onkeypress(pa.arriba,"w")
-        wn.onkeypress(pa.abajo,"s")
-        wn.onkeypress(pb.arriba,"Up")
-        wn.onkeypress(pb.abajo,"Down")
-        wn.onkeypress(pb.toogleActivacion,"1")
-        wn.onkeypress(pb.grande,"g")
+        self.clear()
+        self.write("Jugador 1: {} | Jugador 2: {}".format(self.pa.puntaje,self.pb.puntaje), align="center", font=("Courier", 24,"normal"))
         
         
         
 def main():
-    wn = turtle.Screen()
-    Ventana(wn)
+    wn = Screen()
+    vn = Ventana(wn)
     pa = Paleta(-350)
     pb = Paleta(350)
     pe = Pelota()
-    Tecla(wn, pa, pb, pe)
+    vn.Teclas(pa,pb)
     fi = Fisicas(pe,pa,pb)
     sc = Score(pa,pb)
     while True:
@@ -159,6 +157,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    
-    
-
